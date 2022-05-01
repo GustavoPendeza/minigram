@@ -1,0 +1,86 @@
+@layout('layouts/main')
+@set('title', 'Editar Perfil')
+
+@section('body')
+        
+    <h1 class="my-3">Editar Perfil</h1>
+    <hr>
+
+    <form action="{{ route('profile.update', {
+        qs: {
+          _method: 'PATCH'
+        }
+      }) }}" method="POST" enctype="multipart/form-data">
+        <div class="row">
+            <div class="col">
+                <div class="form-floating my-3">
+
+                    <input type="text" name="name" class="form-control" id="name" placeholder="Nome" value="{{ user.name }}" required autofocus>
+                    <label for="name" class="text-dark">Nome*</label>
+                    @if(flashMessages.has('errors.name'))
+                        <div class="text-danger">
+                            <small>{{ flashMessages.get("errors.name") }}</small>
+                        </div>
+                    @endif
+                    
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="form-floating my-3">
+
+                    <input type="text" name="username" class="form-control" id="username" placeholder="Nome de Usuário" value="{{ user.username }}" required>
+                    <label for="username" class="text-dark">Nome de Usuário*</label>
+                    @if(flashMessages.has('errors.username'))
+                        <div class="text-danger">
+                            <small>{{ flashMessages.get("errors.username") }}</small>
+                        </div>
+                    @endif
+                    
+                </div>
+            </div>
+        </div>
+
+        <div class="form-floating my-4">
+
+            <input type="email" name="email" class="form-control" id="email" placeholder="E-mail" value="{{ user.email }}" required>
+            <label for="email" class="text-dark">E-mail*</label>
+            @if(flashMessages.has('errors.email'))
+                <div class="text-danger">
+                    <small>{{ flashMessages.get("errors.email") }}</small>
+                </div>
+            @endif
+            
+        </div>
+
+        <div class="my-3">
+
+            <label for="avatar" class="form-label">Foto de Perfil</label>
+            <input class="form-control" type="file" name="avatar" id="avatar">
+            @if(flashMessages.has('errors.avatar'))
+                <div class="text-danger">
+                    <small>{{ flashMessages.get("errors.avatar") }}</small>
+                </div>
+            @endif
+            
+        </div>
+
+        <div class="form-floating my-4">
+
+            <textarea class="form-control" name="description" placeholder="Descrição" id="description" style="resize: none; height: 100px">{{ user.description }}</textarea>
+            <label for="description">Descrição</label>
+            @if(flashMessages.has('errors.description'))
+                <div class="text-danger">
+                    <small>{{ flashMessages.get("errors.description") }}</small>
+                </div>
+            @endif
+            
+        </div>
+                
+        <div class="form-group my-3">
+            <button type="submit" class="btn btn-lg btn-primary">Salvar</button>
+        </div>
+
+    </form>
+
+@end

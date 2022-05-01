@@ -1,0 +1,255 @@
+@layout('layouts/main')
+@set('title', 'Posts salvos')
+
+@section('body')
+
+<div class="justify-content-center my-4">
+    <h2 class="text-center mb-4">Posts que você salvou em: 
+        @if(!category.category)
+            {{ category }}
+        @else
+            {{ category.category }}
+            <div class="btn-group">
+                <button class="btn btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                
+                </button>
+                <ul class="dropdown-menu">
+                    <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editCategory">
+                        Editar Nome da Categoria
+                    </button></li>
+                    <li><button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteCategory">
+                        Excluir Categoria
+                    </button></li>
+                </ul>
+            </div>
+        @endif
+    </h2>
+    
+    <hr>
+    <div class="row">
+        @each(save in saves)
+        <div class="col-4 justify-content-center my-2">
+            <a data-bs-toggle="modal" data-bs-target="#Post{{ save.post.id }}" style="text-decoration: none; color: black; cursor: pointer">
+                <img src="{{ save.post.image }}" class="rounded" height="356px" width="356px">
+            </a>
+        </div>
+        @endeach
+    </div>
+</div>
+
+@each(save in saves)
+    <div class="modal fade" id="Post{{ save.post.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+          <div class="modal-content">
+                
+                <div class="row me-2">
+
+                    <div class="col">
+                        <img src="{{ save.post.image }}" class="img-fluid" width="100%" style="max-height: 600px">
+                    </div>
+
+                    <div class="col-5 mt-3">
+                        <div class="row">
+                            <div class="col" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 350px;">
+                                <a href="/profile/{{ save.user.username }}" style="text-decoration: none; color: black">
+                                    @if(save.user.avatar !== null)
+                                        <img src="{{ save.user.avatar }}" class="rounded-circle" width="55px" height="55px"> 
+                                    @else
+                                        <img src="/icons/default.jpg" class="rounded-circle" width="55px" height="55px"> 
+                                    @end
+                                    <b class="ms-2">{{ save.user.username }}</b>
+                                </a>
+                            </div>
+                            @if(save.user.id === auth.user.id)
+                                <div class="col-2">
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editPost{{ save.post.id }}">
+                                                Editar Legenda
+                                            </button></li>
+                                            <li><button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deletePost{{ save.post.id }}">
+                                                Excluir Post
+                                            </button></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            @elseif(auth.user.follows.map(f => f.followingId).includes(save.user.id))
+                                <div class="col-3">
+                                    <form action="{{ `/unfollow/${save.user.id}?_method=DELETE` }}" method="POST">
+                                        <button type="submit" class="btn btn-light btn-sm border-dark mt-2">Seguindo</button>
+                                    </form>
+                                </div>
+                            @else 
+                                <div class="col-3">
+                                    <form action="/follow/{{ save.user.id }}" method="POST">
+                                        <button type="submit" class="btn btn-primary btn-sm mt-2">Seguir</button>
+                                    </form>
+                                </div>
+                            @end
+                        </div>
+                        <hr>
+                        <p>
+                            {{ save.post.caption }} 
+                            @if(save.post.updatedAt > save.post.createdAt)
+                                <small class="text-muted">(Editado)</small>
+                            @end
+                        </p>
+                        
+                        <div class="mb-2" style="position: absolute; bottom: 0;">
+                            @if(auth.user.like.map(l => l.postId).includes(save.post.id))
+                                <form action="{{ `/save/${save.post.id}?_method=DELETE` }}" method="POST">
+                                    <button class="btn btn-sm" type="submit"><img src="/icons/heart-red.png" width="25px" height="25px"></button>
+                                </form>
+                            @else
+                                <form action="/save/{{ save.post.id }}" method="POST">
+                                    <button class="btn btn-sm" type="submit"><img src="/icons/heart.png" width="25px" height="25px"></button>
+                                </form>
+                            @end                            
+                        </div>
+                        <div class="mb-2 me-3" style="position: absolute; bottom: 0; right: 0;">
+                            @if(auth.user.salvar.map(s => s.postId).includes(save.post.id))
+                            <form action="{{ `/save/${save.post.id}?_method=DELETE` }}" method="POST">
+                                <button class="btn btn-sm" type="submit">
+                                    <img src="/icons/save-full.png" width="25px" height="28px">
+                                </button>
+                            </form>
+                            @else
+                            <a data-bs-toggle="modal" data-bs-target="#savePost{{ save.post.id }}" style="cursor: pointer">
+                                <img src="/icons/save.png" width="25px" height="28px">
+                            </a>
+                            @endif
+                        </div>
+                    </div>
+                    
+                </div>
+                
+
+          </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editPost{{ save.post.id }}" tabindex="-1" aria-labelledby="editPostLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="editPostLabel">Editar Legenda</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form action="{{ `/post/${save.post.id}?_method=PATCH` }}" method="POST">
+
+                <div class="modal-body">
+                    
+                    <div class="form-floating my-4">
+
+                        <textarea class="form-control" name="caption" placeholder="Legenda da Imagem" id="caption" maxlength="200" style="resize: none; height: 100px">{{ save.post.caption }}</textarea>
+                        <label for="caption">Legenda da Imagem</label>
+                        @if(flashMessages.has('errors.caption'))
+                            <div class="text-danger">
+                                <small>{{ flashMessages.get("errors.caption") }}</small>
+                            </div>
+                        @endif
+                        
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+
+            </form>
+
+          </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deletePost{{ save.post.id }}" tabindex="-1" aria-labelledby="deletePostLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="deletePostLabel">Tem certeza que quer excluir esse post?</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form action="{{ `/post/${save.post.id}?_method=DELETE` }}" method="POST">
+                
+                <div class="modal-body">
+                    
+                        <div class="d-flex justify-content-center">
+                            <img src="{{ save.post.image }}" title="{{ save.post.caption }}" width="500px">
+                        </div>
+                        
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </div>
+
+            </form>
+
+          </div>
+        </div>
+    </div>
+    @endeach
+
+    <div class="modal fade" id="editCategory" tabindex="-1" aria-labelledby="editCategoryLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="editCategoryLabel">Renomear Categoria: {{ category.category }}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form action="{{ `/category/${category.id}?_method=PATCH` }}" method="POST">
+                
+                <div class="modal-body">
+                    
+                    <div class="form-floating my-4">
+    
+                        <input type="text" class="form-control" name="category" value="{{ category.category }}" placeholder="Categoria" id="category" maxlength="50" autocomplete="off" required>
+                        <label for="category">Renomear Categoria</label>
+                        @if(flashMessages.has('errors.category'))
+                            <div class="text-danger">
+                                <small>{{ flashMessages.get("errors.category") }}</small>
+                            </div>
+                        @endif
+                        
+                    </div>
+                        
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Renomear</button>
+                </div>
+    
+            </form>
+    
+          </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteCategory" tabindex="-1" aria-labelledby="deleteCategoryLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="deleteCategoryLabel">Tem certeza que quer excluir a categoria {{ category.category }}?</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form action="{{ `/category/${category.id}?_method=DELETE` }}" method="POST">
+    
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </div>
+    
+            </form>
+    
+          </div>
+        </div>
+    </div>
+    
+@end

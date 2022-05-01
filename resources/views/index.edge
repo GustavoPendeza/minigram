@@ -1,0 +1,302 @@
+@layout('layouts/main')
+@set('title', 'Home')
+
+@section('body')
+
+<div class="container d-flex justify-content-end">
+    <div class="row">
+        <div class="col ms-5">
+            @each(post in posts)
+                <div class="card my-3" style="width: 40rem;">
+                    <div class="card-header d-flex justify-content-between">
+                        <a href="/profile/{{ post.user.username }}" style="text-decoration: none; color: black">
+                            @if(post.user.avatar !== null)
+                                <img src="{{ post.user.avatar }}" class="rounded-circle" width="35px" height="35px"> 
+                            @else
+                                <img src="/icons/default.jpg" class="rounded-circle" width="35px" height="35px"> 
+                            @end
+                            <b class="ms-2">{{ post.user.username }}</b>
+                        </a>
+                        @if(post.user.id === auth.user.id)
+                        <div class="btn-group">
+                            <button class="btn btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                              
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editPost{{ post.id }}">
+                                    Editar Legenda
+                                </button></li>
+                                <li><button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deletePost{{ post.id }}">
+                                    Excluir Post
+                                </button></li>
+                            </ul>
+                        </div>
+                        @end
+                    </div>
+                    <img src="{{ post.image }}" width="100%" style="max-height: 600px">
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <div class="row">
+                                <div class="col-10">
+                                    @if(auth.user.like.map(l => l.postId).includes(post.id))
+                                        <form action="{{ `/like/${post.id}?_method=DELETE` }}" method="POST">
+                                            <button class="btn btn-sm" type="submit">
+                                                <img src="/icons/heart-red.png" width="25px" height="28px">
+                                            </button>
+                                        </form>
+                                    @else
+                                        <form action="/like/{{ post.id }}" method="POST">
+                                            <button class="btn btn-sm" type="submit">
+                                                <img src="/icons/heart.png" width="25px" height="28px">
+                                            </button>
+                                        </form>
+                                    @end
+                                </div>
+                                <div class="col d-flex justify-content-end">
+                                    @if(auth.user.salvar.map(s => s.postId).includes(post.id))
+                                    <form action="{{ `/save/${post.id}?_method=DELETE` }}" method="POST">
+                                        <button class="btn btn-sm" type="submit">
+                                            <img src="/icons/save-full.png" width="25px" height="28px">
+                                        </button>
+                                    </form>
+                                    @else
+                                    <a data-bs-toggle="modal" data-bs-target="#savePost{{ post.id }}" style="cursor: pointer">
+                                        <img src="/icons/save.png" width="25px" height="28px">
+                                    </a>
+                                    @endif
+                                </div>
+                            </div>                            
+                        </div>
+                        <p class="card-text">
+                            <b><a href="/profile/{{ post.user.username }}" style="text-decoration: none; color: black">
+                                {{ post.user.username }}
+                            </a></b>
+                            {{ post.caption }} 
+                            @if(post.updatedAt > post.createdAt)
+                                <small class="text-muted">(Editado)</small>
+                            @end
+                        </p>
+                        <small class="text-muted">{{ post.createdAt.toFormat('DD') }}</small>
+                    </div>
+                </div>
+            @endeach
+        </div>
+
+        <div class="col my-3">
+            
+            <div class="card border-white" style="width: 20rem;">
+                <div class="card-body">
+                    <h5 class="card-title mb-4" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px;">
+                        <a href="/profile/{{ auth.user.username }}" style="text-decoration: none; color: black">
+                            @if(auth.user.avatar !== null)
+                                <img src="{{ auth.user.avatar }}" class="rounded-circle" width="55px" height="55px"> 
+                            @else
+                                <img src="/icons/default.jpg" class="rounded-circle" width="55px" height="55px"> 
+                            @end
+                            {{ auth.user.username }}
+                        </a>
+                    </h5>
+                    <h6 class="card-subtitle mb-4 text-muted">Sugestôes para você</h6>
+                    @each(recommendation in recommendations)
+                    <p class="card-text">
+                        <div class="row">
+                            <div class="col-9" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;">
+                                <a href="/profile/{{ recommendation.username }}" style="text-decoration: none; color: black">
+                                    @if(recommendation.avatar !== null)
+                                        <img src="{{ recommendation.avatar }}" class="rounded-circle" width="30px" height="30px"> 
+                                    @else
+                                        <img src="/icons/default.jpg" class="rounded-circle" width="30px" height="30px"> 
+                                    @end
+                                    <small>{{ recommendation.username }}</small>
+                                </a>
+                            </div>
+                            <div class="col d-flex justify-content-end">
+                                <form action="/follow/{{ recommendation.id }}" method="POST">
+                                    <button type="submit" class="btn btn-primary btn-sm">Seguir</button>
+                                </form>
+                            </div>
+                        </div>                        
+                    </p>
+                    @endeach
+                    <a href="#" class="card-link text-muted" style="text-decoration: none;"><small>Sobre</small></a>
+                    <a href="#" class="card-link text-muted" style="text-decoration: none;"><small>Ajuda</small></a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    @each(post in posts)
+    <div class="modal fade" id="editPost{{ post.id }}" tabindex="-1" aria-labelledby="editPostLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="editPostLabel">Editar Legenda</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form action="{{ `/post/${post.id}?_method=PATCH` }}" method="POST">
+
+                <div class="modal-body">
+                    
+                    <div class="form-floating my-4">
+
+                        <textarea class="form-control" name="caption" placeholder="Legenda da Imagem" id="caption" maxlength="200" style="resize: none; height: 100px">{{ post.caption }}</textarea>
+                        <label for="caption">Legenda da Imagem</label>
+                        @if(flashMessages.has('errors.caption'))
+                            <div class="text-danger">
+                                <small>{{ flashMessages.get("errors.caption") }}</small>
+                            </div>
+                        @endif
+                        
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+
+            </form>
+
+          </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deletePost{{ post.id }}" tabindex="-1" aria-labelledby="deletePostLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="deletePostLabel">Tem certeza que quer excluir esse post?</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form action="{{ `/post/${post.id}?_method=DELETE` }}" method="POST">
+                
+                <div class="modal-body">
+                    
+                        <div class="d-flex justify-content-center">
+                            <img src="{{ post.image }}" title="{{ post.caption }}" width="500px">
+                        </div>
+                        
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </div>
+
+            </form>
+
+          </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="savePost{{ post.id }}" tabindex="-1" aria-labelledby="savePostLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="savePostLabel">Salvar Post em:</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+                
+            <div class="modal-body">
+                
+                <div class="row">
+                    <div class="col-3">
+                        <div class="d-flex justify-content-center">
+                            <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#categoryPost{{ post.id }}">
+                                <img src="/icons/plus.png" title="Nova categoria" width="100px" height="100px">
+                                <p>Nova categoria</p>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="d-flex justify-content-center">
+                            <form action="{{ `/save/${post.id}` }}" method="POST">
+                                <button type="submit" class="btn">
+                                    @if(allsaves === null)
+                                        <img src="/icons/plus.png" title="Todos" width="100px" height="100px">
+                                    @else
+                                        <img src="{{ allsaves.image }}" title="Todos" width="100px" height="100px">
+                                    @endif
+                                    <p>Todos salvos</p>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    @each(category in categoryPost)
+                    <div class="col-3">
+                        <div class="d-flex justify-content-center">
+                            @if(!category.post)
+                            <form action="{{ `/category/${post.id}` }}" method="POST">
+                                <input type="hidden" name="category" value="{{ category.id }}">
+                                <button type="submit" class="btn">
+                                    <img src="/icons/plus.png" title="{{ category.category }}" width="100px" height="100px">
+                                    <p>{{ category.category }}</p>
+                                </button>
+                            </form>
+                            @else
+                            <form action="{{ `/category/${post.id}` }}" method="POST">
+                                <input type="hidden" name="category" value="{{ category.category.id }}">
+                                <button type="submit" class="btn">
+                                    <img src="{{ category.post.image }}" title="{{ category.category.category }}" width="100px" height="100px">
+                                    <p>{{ category.category.category }}</p>
+                                </button>
+                            </form>
+                            @endif
+                        </div>
+                    </div>
+                    @endeach
+                </div>
+                
+                    
+            </div>
+
+          </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="categoryPost{{ post.id }}" tabindex="-1" aria-labelledby="categoryPostLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="categoryPostLabel">Salvar Post em Nova Categoria</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form action="{{ route('category.create') }}" method="POST">
+                
+                <div class="modal-body">
+                    
+                    <div class="form-floating my-4">
+
+                        <input type="hidden" name="post" value="{{ post.id }}">
+
+                        <input type="text" class="form-control" name="category" placeholder="Categoria" id="category" maxlength="50" autocomplete="off" required>
+                        <label for="category">Nova Categoria</label>
+                        @if(flashMessages.has('errors.category'))
+                            <div class="text-danger">
+                                <small>{{ flashMessages.get("errors.category") }}</small>
+                            </div>
+                        @endif
+                        
+                    </div>
+                        
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Criar e Salvar Post</button>
+                </div>
+
+            </form>
+
+          </div>
+        </div>
+    </div>
+    @endeach
+
+</div>
+
+
+    
+@end

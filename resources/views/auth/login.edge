@@ -1,0 +1,59 @@
+@layout('layouts/auth')
+@set('title', 'Login')
+
+@section('body')
+
+<div class="d-flex justify-content-center mt-3">
+
+    <div class="card mt-3 text-dark text-center" style="width: 500px;">
+       
+        <div class="card-header">
+            <h1>Login</h1>
+        </div>
+
+        <div class="card-body">
+
+            @if (flashMessages.has('forms'))
+            <div class="alert alert-success" role="alert">
+                {{ flashMessages.get('forms') }}
+            </div>
+            @endif
+
+            @if (flashMessages.has('formd'))
+                <div class="alert alert-danger" role="alert">
+                    {{ flashMessages.get('formd') }}
+                </div>
+            @endif
+
+            <form action="{{ route('auth.login') }}" method="post">
+                <div class="form-floating my-3">
+
+                    <input type="text" name="uid" class="form-control" id="uid" placeholder="Nome ou E-mail" required autofocus>
+                    <label for="uid" class="text-dark">Nome de Usuário ou E-mail</label>
+                    
+                </div>
+
+                <div class="form-floating my-4">
+
+                    <input type="password" name="password" class="form-control" id="password" minlength="6" placeholder="Senha" required>
+                    <label for="password" class="text-dark">Senha</label>
+                    
+                </div>
+                        
+                <div class="form-group my-3">
+                    <input type="submit" class="btn btn-lg btn-primary" value="Entrar">
+                </div>
+
+            </form>
+
+            <a href="{{ route('forgot.index') }}">Esqueceu sua senha?</a>
+            |
+            <a href="/register">Cadastre-se</a>
+
+        </div>
+
+    </div>
+
+</div>
+
+@end

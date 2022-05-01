@@ -1,0 +1,435 @@
+@layout('layouts/main')
+@set('title', `Perfil de @${user.username}`)
+
+@section('body')
+
+    <div class="card p-5 border-white">
+        <div class="d-flex align-items-center">
+            @if(user.avatar !== null)
+                <div class="image pe-2 justify-content-end"> 
+                    <img src="{{ user.avatar }}" class="rounded-circle" height="150px" width="150px">
+                </div>
+            @else
+                <div class="image pe-2 justify-content-end"> 
+                    <img src="/icons/default.jpg" class="rounded-circle" height="150px" width="150px">
+                </div>
+            @end
+            <div class="ml-3 w-100">
+                <div class="row justify-content-evenly mb-4">
+                    <div class="col-2">
+                        <span>{{ user.username }}</span>
+                    </div>
+                    @if(user.id === auth.user.id)
+                    <div class="col-2">
+                        <a href="/account/edit" class="btn border-dark">Editar Perfil</a>
+                    </div>
+                    @elseif(auth.user.follows.map(f => f.followingId).includes(user.id))
+                        <div class="col-2">
+                            <form action="{{ `/unfollow/${user.id}?_method=DELETE` }}" method="POST">
+                                <button type="submit" class="btn btn-light border-dark">Seguindo</button>
+                            </form>
+                        </div>
+                    @else 
+                        <div class="col-2">
+                            <form action="/follow/{{ user.id }}" method="POST">
+                                <button type="submit" class="btn btn-primary">Seguir</button>
+                            </form>
+                        </div>
+                    @end
+                    <div class="col-2"> 
+                        <span class="articles">{{ user.posts.length }} Posts</span>
+                    </div>
+                    <div class="col-2"> 
+                        <a data-bs-toggle="modal" data-bs-target="#seguidores" style="text-decoration: none; color: black; cursor: pointer">
+                            <span class="rating">{{ followers.length }} Seguidores</span>
+                        </a>
+                    </div>
+                    <div class="col-2"> 
+                        <a data-bs-toggle="modal" data-bs-target="#seguindo" style="text-decoration: none; color: black; cursor: pointer">
+                            <span class="rating">{{ followings.length }} Seguindo</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="ms-4">
+                    <h5 class="mb-0 mt-0">{{ user.name }}</h5>
+                </div>
+                
+                <div class="p-2 mt-2 d-flex justify-content-start rounded stats">
+                    @if(user.description) 
+                    <div class="d-flex flex-column"> 
+                        <span class="articles ms-3">
+                            {{ user.description }} 
+                        </span>
+                    </div>
+                    @end
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <div class="justify-content-center my-4">
+        <h2 class="text-center mb-4">Posts</h2>
+        <div class="row">
+            @each(post in user.posts)
+            <div class="col-4 justify-content-center my-2">
+                <a data-bs-toggle="modal" data-bs-target="#Post{{ post.id }}" style="text-decoration: none; color: black; cursor: pointer">
+                    <img src="{{ post.image }}" class="rounded" height="356px" width="356px">
+                </a>
+            </div>
+            @endeach
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="seguidores" tabindex="-1" aria-labelledby="seguidoresLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="seguidoresLabel">Seguidores</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @each(follower in followers)
+                <div class="row">
+
+                    <div class="col-9" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 350px;">
+                        <a href="/profile/{{ follower.username }}" style="text-decoration: none; color: black">
+                            @if(follower.avatar !== null)
+                                <img src="{{ follower.avatar }}" class="rounded-circle" width="40px" height="40px"> 
+                            @else
+                                <img src="/icons/default.jpg" class="rounded-circle" width="40px" height="40px"> 
+                            @end 
+                            <small class="ms-3">{{ follower.username }}</small>
+                        </a>
+                    </div>
+
+                    @if(auth.user.follows.map(f => f.followingId).includes(follower.id))
+                        <div class="col-3">
+                            <form action="{{ `/unfollow/${follower.id}?_method=DELETE` }}" method="POST">
+                                <button type="submit" class="btn btn-light btn-sm border-dark mt-2">Seguindo</button>
+                            </form>
+                        </div>
+                    @else 
+                        <div class="col-3">
+                            <form action="/follow/{{ follower.id }}" method="POST">
+                                <button type="submit" class="btn btn-primary btn-sm mt-2">Seguir</button>
+                            </form>
+                        </div>
+                    @end
+                </div>
+                <hr>
+                @endeach
+            </div>
+          </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="seguindo" tabindex="-1" aria-labelledby="seguindoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="seguindoLabel">Seguindo</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @each(following in followings)
+                <div class="row">
+
+                    <div class="col-9" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 350px;">
+                        <a href="/profile/{{ following.username }}" style="text-decoration: none; color: black">
+                            @if(following.avatar !== null)
+                                <img src="{{ following.avatar }}" class="rounded-circle" width="40px" height="40px"> 
+                            @else
+                                <img src="/icons/default.jpg" class="rounded-circle" width="40px" height="40px"> 
+                            @end 
+                            <small class="ms-3">{{ following.username }}</small>
+                        </a>
+                    </div>
+
+                    @if(auth.user.follows.map(f => f.followingId).includes(following.id))
+                        <div class="col-3">
+                            <form action="{{ `/unfollow/${following.id}?_method=DELETE` }}" method="POST">
+                                <button type="submit" class="btn btn-light btn-sm border-dark mt-2">Seguindo</button>
+                            </form>
+                        </div>
+                    @else 
+                        <div class="col-3">
+                            <form action="/follow/{{ following.id }}" method="POST">
+                                <button type="submit" class="btn btn-primary btn-sm mt-2">Seguir</button>
+                            </form>
+                        </div>
+                    @end
+                </div>
+                <hr>
+                @endeach
+            </div>
+          </div>
+        </div>
+    </div>
+
+    @each(post in user.posts)
+    <div class="modal fade" id="Post{{ post.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+          <div class="modal-content">
+                
+                <div class="row">
+
+                    <div class="col">
+                        <img src="{{ post.image }}" class="img-fluid" width="100%" style="max-height: 600px">
+                    </div>
+
+                    <div class="col-5 mt-3">
+                        <div class="row">
+                            <div class="col" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 400px;">
+                                <a href="/profile/{{ user.username }}" style="text-decoration: none; color: black">
+                                    @if(user.avatar !== null)
+                                        <img src="{{ user.avatar }}" class="rounded-circle" width="55px" height="55px"> 
+                                    @else
+                                        <img src="/icons/default.jpg" class="rounded-circle" width="55px" height="55px"> 
+                                    @end
+                                    <b class="ms-2">{{ user.username }}</b>
+                                </a>
+                            </div>
+                            @if(user.id === auth.user.id)
+                                <div class="col-2">
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editPost{{ post.id }}">
+                                                Editar Legenda
+                                            </button></li>
+                                            <li><button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deletePost{{ post.id }}">
+                                                Excluir Post
+                                            </button></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            @elseif(auth.user.follows.map(f => f.followingId).includes(user.id))
+                                <div class="col-3">
+                                    <form action="{{ `/unfollow/${user.id}?_method=DELETE` }}" method="POST">
+                                        <button type="submit" class="btn btn-light btn-sm border-dark mt-2">Seguindo</button>
+                                    </form>
+                                </div>
+                            @else 
+                                <div class="col-3">
+                                    <form action="/follow/{{ user.id }}" method="POST">
+                                        <button type="submit" class="btn btn-primary btn-sm mt-2">Seguir</button>
+                                    </form>
+                                </div>
+                            @end
+                        </div>
+                        <hr>
+                        <p>
+                            {{ post.caption }} 
+                            @if(post.updatedAt > post.createdAt)
+                                <small class="text-muted">(Editado)</small>
+                            @end
+                        </p>
+
+                        <div class="mb-2" style="position: absolute; bottom: 0;">
+                            @if(auth.user.like.map(l => l.postId).includes(post.id))
+                                <form action="{{ `/like/${post.id}?_method=DELETE` }}" method="POST">
+                                    <button class="btn btn-sm" type="submit"><img src="/icons/heart-red.png" width="25px" height="25px"></button>
+                                </form>
+                            @else
+                                <form action="/like/{{ post.id }}" method="POST">
+                                    <button class="btn btn-sm" type="submit"><img src="/icons/heart.png" width="25px" height="25px"></button>
+                                </form>
+                            @end
+                        </div>
+                        <div class="mb-2 me-3" style="position: absolute; bottom: 0; right: 0;">
+                            @if(auth.user.salvar.map(s => s.postId).includes(post.id))
+                            <form action="{{ `/save/${post.id}?_method=DELETE` }}" method="POST">
+                                <button class="btn btn-sm" type="submit">
+                                    <img src="/icons/save-full.png" width="25px" height="28px">
+                                </button>
+                            </form>
+                            @else
+                            <a data-bs-toggle="modal" data-bs-target="#savePost{{ post.id }}" style="cursor: pointer">
+                                <img src="/icons/save.png" width="25px" height="28px">
+                            </a>
+                            @endif
+                        </div>
+                    </div>
+                    
+                </div>
+                
+
+          </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editPost{{ post.id }}" tabindex="-1" aria-labelledby="editPostLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="editPostLabel">Editar Legenda</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form action="{{ `/post/${post.id}?_method=PATCH` }}" method="POST">
+
+                <div class="modal-body">
+                    
+                    <div class="form-floating my-4">
+
+                        <textarea class="form-control" name="caption" placeholder="Legenda da Imagem" id="caption" maxlength="200" style="resize: none; height: 100px">{{ post.caption }}</textarea>
+                        <label for="caption">Legenda da Imagem</label>
+                        @if(flashMessages.has('errors.caption'))
+                            <div class="text-danger">
+                                <small>{{ flashMessages.get("errors.caption") }}</small>
+                            </div>
+                        @endif
+                        
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+
+            </form>
+
+          </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deletePost{{ post.id }}" tabindex="-1" aria-labelledby="deletePostLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="deletePostLabel">Tem certeza que quer excluir esse post?</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form action="{{ `/post/${post.id}?_method=DELETE` }}" method="POST">
+                
+                <div class="modal-body">
+                    
+                        <div class="d-flex justify-content-center">
+                            <img src="{{ post.image }}" title="{{ post.caption }}" width="500px">
+                        </div>
+                        
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </div>
+
+            </form>
+
+          </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="savePost{{ post.id }}" tabindex="-1" aria-labelledby="savePostLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="savePostLabel">Salvar Post em:</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+                
+            <div class="modal-body">
+                
+                <div class="row">
+                    <div class="col-3">
+                        <div class="d-flex justify-content-center">
+                            <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#categoryPost{{ post.id }}">
+                                <img src="/icons/plus.png" title="Nova categoria" width="100px" height="100px">
+                                <p>Nova categoria</p>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="d-flex justify-content-center">
+                            <form action="{{ `/save/${post.id}` }}" method="POST">
+                                <button type="submit" class="btn">
+                                    @if(allsaves === null)
+                                        <img src="/icons/plus.png" title="Todos" width="100px" height="100px">
+                                    @else
+                                        <img src="{{ allsaves.image }}" title="Todos" width="100px" height="100px">
+                                    @endif
+                                    <p>Todos salvos</p>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    @each(category in categoryPost)
+                    <div class="col-3">
+                        <div class="d-flex justify-content-center">
+                            @if(!category.post)
+                            <form action="{{ `/category/${post.id}` }}" method="POST">
+                                <input type="hidden" name="category" value="{{ category.id }}">
+                                <button type="submit" class="btn">
+                                    <img src="/icons/plus.png" title="{{ category.category }}" width="100px" height="100px">
+                                    <p>{{ category.category }}</p>
+                                </button>
+                            </form>
+                            @else
+                            <form action="{{ `/category/${post.id}` }}" method="POST">
+                                <input type="hidden" name="category" value="{{ category.category.id }}">
+                                <button type="submit" class="btn">
+                                    <img src="{{ category.post.image }}" title="{{ category.category.category }}" width="100px" height="100px">
+                                    <p>{{ category.category.category }}</p>
+                                </button>
+                            </form>
+                            @endif
+                        </div>
+                    </div>
+                    @endeach
+                </div>
+                
+                    
+            </div>
+
+          </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="categoryPost{{ post.id }}" tabindex="-1" aria-labelledby="categoryPostLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="categoryPostLabel">Salvar Post em Nova Categoria</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form action="{{ route('category.create') }}" method="POST">
+                
+                <div class="modal-body">
+                    
+                    <div class="form-floating my-4">
+
+                        <input type="hidden" name="post" value="{{ post.id }}">
+
+                        <input type="text" class="form-control" name="category" placeholder="Categoria" id="category" maxlength="50" autocomplete="off" required>
+                        <label for="category">Nova Categoria</label>
+                        @if(flashMessages.has('errors.category'))
+                            <div class="text-danger">
+                                <small>{{ flashMessages.get("errors.category") }}</small>
+                            </div>
+                        @endif
+                        
+                    </div>
+                        
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Criar e Salvar Post</button>
+                </div>
+
+            </form>
+
+          </div>
+        </div>
+    </div>
+    @endeach
+
+@end

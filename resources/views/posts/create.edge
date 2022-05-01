@@ -1,0 +1,41 @@
+@layout('layouts/main')
+@set('title', 'Criar Post')
+
+@section('body')
+        
+    <h1 class="my-3">Criar Post</h1>
+    <hr>
+
+    <form action="{{ route('posts.store') }}" method="POST" enctype="multipart/form-data">
+
+        <div class="my-3">
+
+            <label for="image" class="form-label">Imagem</label>
+            <input class="form-control" type="file" name="image" id="image">
+            @if(flashMessages.has('errors.image'))
+                <div class="text-danger">
+                    <small>{{ flashMessages.get("errors.image") }}</small>
+                </div>
+            @endif
+            
+        </div>
+
+        <div class="form-floating my-4">
+
+            <textarea class="form-control" name="caption" placeholder="Legenda da Imagem" id="caption" maxlength="200" style="resize: none; height: 100px"></textarea>
+            <label for="caption">Legenda da Imagem</label>
+            @if(flashMessages.has('errors.caption'))
+                <div class="text-danger">
+                    <small>{{ flashMessages.get("errors.caption") }}</small>
+                </div>
+            @endif
+            
+        </div>
+                
+        <div class="form-group my-3">
+            <button type="submit" class="btn btn-lg btn-primary">Postar</button>
+        </div>
+
+    </form>
+
+@end

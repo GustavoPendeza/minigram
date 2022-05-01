@@ -1,0 +1,282 @@
+@layout('layouts/main')
+@set('title', 'Posts que você curtiu')
+
+@section('body')
+
+    <div class="justify-content-center my-4">
+        <h2 class="text-center mb-4">Posts que você curtiu</h2>
+        <hr>
+        <div class="row">
+            @each(like in likes)
+            <div class="col-4 justify-content-center my-2">
+                <a data-bs-toggle="modal" data-bs-target="#Post{{ like.post.id }}" style="text-decoration: none; color: black; cursor: pointer">
+                    <img src="{{ like.post.image }}" class="rounded" height="356px" width="356px">
+                </a>
+            </div>
+            @endeach
+        </div>
+    </div>
+
+    @each(like in likes)
+    <div class="modal fade" id="Post{{ like.post.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+          <div class="modal-content">
+                
+                <div class="row me-2">
+
+                    <div class="col">
+                        <img src="{{ like.post.image }}" class="img-fluid" width="100%" style="max-height: 600px">
+                    </div>
+
+                    <div class="col-5 mt-3">
+                        <div class="row">
+                            <div class="col" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 350px;">
+                                <a href="/profile/{{ like.user.username }}" style="text-decoration: none; color: black">
+                                    @if(like.user.avatar !== null)
+                                        <img src="{{ like.user.avatar }}" class="rounded-circle" width="55px" height="55px"> 
+                                    @else
+                                        <img src="/icons/default.jpg" class="rounded-circle" width="55px" height="55px"> 
+                                    @end
+                                    <b class="ms-2">{{ like.user.username }}</b>
+                                </a>
+                            </div>
+                            @if(like.user.id === auth.user.id)
+                                <div class="col-2">
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editPost{{ like.post.id }}">
+                                                Editar Legenda
+                                            </button></li>
+                                            <li><button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deletePost{{ like.post.id }}">
+                                                Excluir Post
+                                            </button></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            @elseif(auth.user.follows.map(f => f.followingId).includes(like.user.id))
+                                <div class="col-3">
+                                    <form action="{{ `/unfollow/${like.user.id}?_method=DELETE` }}" method="POST">
+                                        <button type="submit" class="btn btn-light btn-sm border-dark mt-2">Seguindo</button>
+                                    </form>
+                                </div>
+                            @else 
+                                <div class="col-3">
+                                    <form action="/follow/{{ like.user.id }}" method="POST">
+                                        <button type="submit" class="btn btn-primary btn-sm mt-2">Seguir</button>
+                                    </form>
+                                </div>
+                            @end
+                        </div>
+                        <hr>
+                        <p>
+                            {{ like.post.caption }} 
+                            @if(like.post.updatedAt > like.post.createdAt)
+                                <small class="text-muted">(Editado)</small>
+                            @end
+                        </p>
+
+                        <div class="mb-2" style="position: absolute; bottom: 0;">
+                            @if(auth.user.like.map(l => l.postId).includes(like.post.id))
+                                <form action="{{ `/like/${like.post.id}?_method=DELETE` }}" method="POST">
+                                    <button class="btn btn-sm" type="submit"><img src="/icons/heart-red.png" width="25px" height="25px"></button>
+                                </form>
+                            @else
+                                <form action="/like/{{ like.post.id }}" method="POST">
+                                    <button class="btn btn-sm" type="submit"><img src="/icons/heart.png" width="25px" height="25px"></button>
+                                </form>
+                            @end
+                        </div>
+                        <div class="mb-2 me-3" style="position: absolute; bottom: 0; right: 0;">
+                            @if(auth.user.salvar.map(s => s.postId).includes(like.post.id))
+                            <form action="{{ `/save/${like.post.id}?_method=DELETE` }}" method="POST">
+                                <button class="btn btn-sm" type="submit">
+                                    <img src="/icons/save-full.png" width="25px" height="28px">
+                                </button>
+                            </form>
+                            @else
+                            <a data-bs-toggle="modal" data-bs-target="#savePost{{ like.post.id }}" style="cursor: pointer">
+                                <img src="/icons/save.png" width="25px" height="28px">
+                            </a>
+                            @endif
+                        </div>
+                    </div>
+                    
+                </div>
+                
+
+          </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editPost{{ like.post.id }}" tabindex="-1" aria-labelledby="editPostLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="editPostLabel">Editar Legenda</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form action="{{ `/post/${like.post.id}?_method=PATCH` }}" method="POST">
+
+                <div class="modal-body">
+                    
+                    <div class="form-floating my-4">
+
+                        <textarea class="form-control" name="caption" placeholder="Legenda da Imagem" id="caption" maxlength="200" style="resize: none; height: 100px">{{ like.post.caption }}</textarea>
+                        <label for="caption">Legenda da Imagem</label>
+                        @if(flashMessages.has('errors.caption'))
+                            <div class="text-danger">
+                                <small>{{ flashMessages.get("errors.caption") }}</small>
+                            </div>
+                        @endif
+                        
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+
+            </form>
+
+          </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deletePost{{ like.post.id }}" tabindex="-1" aria-labelledby="deletePostLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="deletePostLabel">Tem certeza que quer excluir esse post?</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form action="{{ `/post/${like.post.id}?_method=DELETE` }}" method="POST">
+                
+                <div class="modal-body">
+                    
+                        <div class="d-flex justify-content-center">
+                            <img src="{{ like.post.image }}" title="{{ like.post.caption }}" width="500px">
+                        </div>
+                        
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </div>
+
+            </form>
+
+          </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="savePost{{ like.post.id }}" tabindex="-1" aria-labelledby="savePostLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="savePostLabel">Salvar Post em:</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+                
+            <div class="modal-body">
+                
+                <div class="row">
+                    <div class="col-3">
+                        <div class="d-flex justify-content-center">
+                            <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#categoryPost{{ like.post.id }}">
+                                <img src="/icons/plus.png" title="Nova categoria" width="100px" height="100px">
+                                <p>Nova categoria</p>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="d-flex justify-content-center">
+                            <form action="{{ `/save/${like.post.id}` }}" method="POST">
+                                <button type="submit" class="btn">
+                                    @if(allsaves === null)
+                                        <img src="/icons/plus.png" title="Todos" width="100px" height="100px">
+                                    @else
+                                        <img src="{{ allsaves.image }}" title="Todos" width="100px" height="100px">
+                                    @endif
+                                    <p>Todos salvos</p>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    @each(category in categoryPost)
+                    <div class="col-3">
+                        <div class="d-flex justify-content-center">
+                            @if(!category.post)
+                            <form action="{{ `/category/${like.post.id}` }}" method="POST">
+                                <input type="hidden" name="category" value="{{ category.id }}">
+                                <button type="submit" class="btn">
+                                    <img src="/icons/plus.png" title="{{ category.category }}" width="100px" height="100px">
+                                    <p>{{ category.category }}</p>
+                                </button>
+                            </form>
+                            @else
+                            <form action="{{ `/category/${like.post.id}` }}" method="POST">
+                                <input type="hidden" name="category" value="{{ category.category.id }}">
+                                <button type="submit" class="btn">
+                                    <img src="{{ category.post.image }}" title="{{ category.category.category }}" width="100px" height="100px">
+                                    <p>{{ category.category.category }}</p>
+                                </button>
+                            </form>
+                            @endif                   
+                        </div>
+                    </div>
+                    @endeach
+                </div>
+                
+                    
+            </div>
+
+          </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="categoryPost{{ like.post.id }}" tabindex="-1" aria-labelledby="categoryPostLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="categoryPostLabel">Salvar Post em Nova Categoria</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form action="{{ route('category.create') }}" method="POST">
+                
+                <div class="modal-body">
+                    
+                    <div class="form-floating my-4">
+
+                        <input type="hidden" name="post" value="{{ like.post.id }}">
+
+                        <input type="text" class="form-control" name="category" placeholder="Categoria" id="category" maxlength="50" autocomplete="off" required>
+                        <label for="category">Nova Categoria</label>
+                        @if(flashMessages.has('errors.category'))
+                            <div class="text-danger">
+                                <small>{{ flashMessages.get("errors.category") }}</small>
+                            </div>
+                        @endif
+                        
+                    </div>
+                        
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Criar e Salvar Post</button>
+                </div>
+
+            </form>
+
+          </div>
+        </div>
+    </div>
+    @endeach
+
+@end

@@ -1,0 +1,49 @@
+@layout('layouts/auth')
+@set('title', 'Esqueci minha senha')
+
+@section('body')
+
+<div class="d-flex justify-content-center mt-3">
+
+    <div class="card mt-3 text-dark text-center" style="width: 500px;">
+       
+        <div class="card-header">
+            <h1>Esqueceu sua senha?</h1>
+        </div>
+
+        <div class="card-body">
+
+            @if (flashMessages.has('form'))
+                <div class="alert alert-danger" role="alert">
+                    {{ flashMessages.get('form') }}
+                </div>
+            @endif
+
+            <form action="{{ route('forgotPassword') }}" method="post">
+                <div class="form-floating my-4">
+
+                    <input type="email" name="email" class="form-control" id="email" placeholder="Digite seu e-mail" required autofocus>
+                    <label for="email" class="text-dark">Digite seu e-mail</label>
+                    @if(flashMessages.has('errors.email'))
+                        <div class="text-danger">
+                            <small>{{ flashMessages.get("errors.email") }}</small>
+                        </div>
+                    @endif
+                    
+                </div>
+                        
+                <div class="form-group my-3">
+                    <input type="submit" class="btn btn-lg btn-primary" value="Enviar">
+                </div>
+
+            </form>
+
+            <a href="{{ route('auth.login.show') }}" title="Fazer login">Lembrei minha senha!</a>
+
+        </div>
+
+    </div>
+
+</div>
+
+@end

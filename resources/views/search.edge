@@ -1,0 +1,74 @@
+@layout('layouts/main')
+@set('title', 'Pesquisa')
+
+@section('body')
+
+    <div class="justify-content-center my-4">
+        <h2 class="text-center mb-4">Resultados para: {{ pesquisa }} </h2>
+        <hr>
+        <div class="container">
+            @if(resultados.length === 0)
+            <div class="flex justify-center">
+                <div class="m-auto text-center">
+                    <h1>Não existem resultados para sua pesquisa</h1>
+                </div>
+            </div>
+            @endif
+            
+            @each(resultado in resultados)
+            <div class="row mb-3">
+
+                <div class="col-6 ms-5" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    <a href="/profile/{{ resultado.username }}" style="text-decoration: none; color: black">
+                        @if(resultado.avatar !== null)
+                            <img src="{{ resultado.avatar }}" class="rounded-circle" width="70px" height="70px"> 
+                        @else
+                            <img src="/icons/default.jpg" class="rounded-circle" width="70px" height="70px"> 
+                        @end 
+                        <b class="ms-3">{{ resultado.name }}</b> | {{ resultado.username }}
+                    </a>
+                </div>
+
+                @if(resultado.id === auth.user.id)
+                    
+                @elseif(auth.user.follows.map(f => f.followingId).includes(resultado.id))
+                    <div class="col-3 d-flex justify-content-center">
+                        <form action="{{ `/unfollow/${resultado.id}?_method=DELETE` }}" method="POST">
+                            <input type="hidden" name="pesquisar" value="{{ pesquisa }}">
+                            <input type="hidden" name="page" value="{{ page }}">
+                            <button type="submit" class="btn btn-light border-dark mt-4">Seguindo</button>
+                        </form>
+                    </div>
+                @else 
+                    <div class="col-3 d-flex justify-content-center">
+                        <form action="/follow/{{ resultado.id }}" method="POST">
+                            <input type="hidden" name="pesquisar" value="{{ pesquisa }}">
+                            <input type="hidden" name="page" value="{{ page }}">
+                            <button type="submit" class="btn btn-primary mt-4">Seguir</button>
+                        </form>
+                    </div>
+                @endif
+            </div>
+            <hr>    
+            @endeach            
+            
+            @if(resultados.length !== 0)
+            <nav class="d-flex justify-content-center">
+                <ul class="pagination">
+                    @each(anchor in resultados.getUrlsForRange(1, resultados.lastPage))
+                    <form action="/search" method="get">
+                        <li class="page-item">
+                            <input type="hidden" name="pesquisar" value="{{ pesquisa }}">
+                            <input type="hidden" name="page" value="{{ anchor.page }}">
+                            <button type="submit" class="page-link">{{ anchor.page }}</button>
+                        </li>
+                    </form>
+                    @endeach
+                </ul>
+            </nav>
+            @endif
+            
+        </div>
+    </div>
+
+@end

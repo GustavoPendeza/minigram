@@ -1,0 +1,82 @@
+@layout('layouts/main')
+@set('title', 'Posts Salvos')
+
+@section('body')
+
+<div class="row">
+    <div class="col-3">
+        <div class="d-flex justify-content-center">
+            <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#categoryPost">
+                <img src="/icons/plus.png" title="Nova categoria" width="200px" height="200px">
+                <p>Nova categoria</p>
+            </button>
+        </div>
+    </div>
+    <div class="col-3">
+        <div class="d-flex justify-content-center">
+            <a href="{{ `/save/all` }}" class="btn">
+                @if(allsaves === null)
+                    <img src="/icons/plus.png" title="Todos" width="200px" height="200px">
+                @else
+                    <img src="{{ allsaves.image }}" title="Todos" width="200px" height="200px">
+                @endif                
+                <p>Todos salvos</p>
+            </a>
+        </div>
+    </div>
+    @each(category in categoryPost)
+    <div class="col-3">
+        <div class="d-flex justify-content-center">
+            @if(!category.post)
+                <a href="{{ `/save/${category.id}` }}" class="btn">
+                    <img src="/icons/plus.png" title="{{ category.category }}" width="200px" height="200px">
+                    <p>{{ category.category }}</p>
+                </a>
+            @else
+                <a href="{{ `/save/${category.category.id}` }}" class="btn">
+                    <img src="{{ category.post.image }}" title="{{ category.category.category }}" width="200px" height="200px">
+                    <p>{{ category.category.category }}</p>
+                </a>
+            @endif
+        </div>
+    </div>
+    @endeach
+</div>
+
+<div class="modal fade" id="categoryPost" tabindex="-1" aria-labelledby="categoryPostLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="categoryPostLabel">Nova Categoria</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        
+        <form action="{{ route('category.create') }}" method="POST">
+            
+            <div class="modal-body">
+                
+                <div class="form-floating my-4">
+
+                    <input type="text" class="form-control" name="category" placeholder="Categoria" id="category" maxlength="50" autocomplete="off" required>
+                    <label for="category">Nova Categoria</label>
+                    @if(flashMessages.has('errors.category'))
+                        <div class="text-danger">
+                            <small>{{ flashMessages.get("errors.category") }}</small>
+                        </div>
+                    @endif
+                    
+                </div>
+                    
+            </div>
+            
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Criar Categoria</button>
+            </div>
+
+        </form>
+
+      </div>
+    </div>
+</div>
+    
+@end

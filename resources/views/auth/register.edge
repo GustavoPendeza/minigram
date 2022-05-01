@@ -1,0 +1,102 @@
+@layout('layouts/auth')
+@set('title', 'Cadastro')
+
+@section('body')
+
+    <div class="d-flex justify-content-center">
+
+        <div class="card mt-3 text-dark text-center" style="width: 500px;">
+           
+            <div class="card-header">
+                <h1>Crie sua conta</h1>
+            </div>
+    
+            <div class="card-body">
+    
+                <form action="{{ route('auth.register') }}" method="post">
+                    <div class="form-floating my-3">
+    
+                        <input type="text" name="name" class="form-control" id="name" placeholder="Nome" required autofocus>
+                        <label for="name" class="text-dark">Nome*</label>
+                        @if(flashMessages.has('errors.name'))
+                            <div class="text-danger">
+                                <small>{{ flashMessages.get("errors.name") }}</small>
+                            </div>
+                        @endif
+                        
+                    </div>
+
+                    <div class="form-floating my-3">
+    
+                        <input type="text" name="username" class="form-control" id="username" placeholder="Nome de Usuário" required>
+                        <label for="username" class="text-dark">Nome de Usuário*</label>
+                        @if(flashMessages.has('errors.username'))
+                            <div class="text-danger">
+                                <small>{{ flashMessages.get("errors.username") }}</small>
+                            </div>
+                        @endif
+                        
+                    </div>
+    
+                    <div class="form-floating my-4">
+    
+                        <input type="email" name="email" class="form-control" id="email" placeholder="E-mail" required>
+                        <label for="email" class="text-dark">E-mail*</label>
+                        @if(flashMessages.has('errors.email'))
+                            <div class="text-danger">
+                                <small>{{ flashMessages.get("errors.email") }}</small>
+                            </div>
+                        @endif
+                        
+                    </div>
+    
+                    <div class="form-floating my-3">
+    
+                        <input type="password" name="password" class="form-control" id="password" placeholder="Senha" minlength="6" required>
+                        <label for="password" class="text-dark">Senha*</label>
+                        @if(flashMessages.has('errors.password'))
+                            <div class="text-danger">
+                                <small>{{ flashMessages.get("errors.password") }}</small>
+                            </div>
+                        @endif
+                        
+                    </div>
+    
+                    <div class="form-floating my-4">
+    
+                        <input type="password" name="confirm_password" class="form-control" id="confirm_password" minlength="8" placeholder="Confirmar Senha" required>
+                        <label for="confirm_password" class="text-dark">Confirmar Senha*</label>
+                        
+                    </div>
+                            
+                    <div class="form-group my-3">
+                        <button type="submit" class="btn btn-lg btn-primary">Entrar</button>
+                    </div>
+    
+                </form>
+    
+                <a href="{{ route('auth.login.show') }}">Já tenho uma conta</a>
+    
+            </div>
+    
+        </div>
+    
+    </div>
+    
+    <script>
+    var password = document.getElementById("password")
+      , confirm_password = document.getElementById("confirm_password");
+    
+    function validatePassword(){
+      if(password.value != confirm_password.value) {
+        confirm_password.setCustomValidity("Senhas diferentes!");
+      } else {
+        confirm_password.setCustomValidity('');
+      }
+    }
+    
+    password.onchange = validatePassword;
+    confirm_password.onkeyup = validatePassword;
+    </script>
+
+@end
