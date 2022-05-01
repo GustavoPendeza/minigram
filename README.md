@@ -27,4 +27,4 @@
 - Para utilizar um servidor de teste do projeto é só usar o comando: node ace serve --watch
 - Se quiser já ter dados em seu banco de dados, pode utilizar o comando: 
     - await UserFactory.with('posts', 5).createMany(15) 
-    (Utilize em AuthController.loginShow, assim, quando entrar na primeira página do projeto ele já cadastrará. Mas lembre de retirar após a primeira utilização)
+    - (Utilize em AuthController.loginShow, assim, quando entrar na primeira página do projeto ele já cadastrará. Mas lembre de retirar após a primeira utilização)
