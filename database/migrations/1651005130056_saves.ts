@@ -24,7 +24,8 @@ export default class Saves extends BaseSchema {
         .references('categories.id')
         .onDelete('SET NULL')
         .nullable()
-      table.timestamps()
+        table.timestamp('created_at', { useTz: true }).notNullable().defaultTo(this.now())
+        table.timestamp('updated_at', { useTz: true }).notNullable().defaultTo(this.now())
     })
   }
 

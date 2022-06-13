@@ -14,7 +14,8 @@ export default class ForgotPasswords extends BaseSchema {
         .notNullable()
       table.string('token').notNullable()
       table.boolean('used').notNullable()
-      table.timestamps()
+      table.timestamp('created_at', { useTz: true }).notNullable().defaultTo(this.now())
+      table.timestamp('updated_at', { useTz: true }).notNullable().defaultTo(this.now())
     })
   }
 

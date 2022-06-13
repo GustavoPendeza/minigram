@@ -18,7 +18,8 @@ export default class Follows extends BaseSchema {
         .references('users.id')
         .onDelete('CASCADE')
         .notNullable()
-      table.timestamps()
+        table.timestamp('created_at', { useTz: true }).notNullable().defaultTo(this.now())
+        table.timestamp('updated_at', { useTz: true }).notNullable().defaultTo(this.now())
     })
   }
 

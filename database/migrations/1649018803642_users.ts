@@ -14,7 +14,8 @@ export default class UsersSchema extends BaseSchema {
       table.text('description').nullable()
       table.dateTime('email_verified_at').nullable()
       table.string('remember_me_token').nullable()
-      table.timestamps()
+      table.timestamp('created_at', { useTz: true }).notNullable().defaultTo(this.now())
+      table.timestamp('updated_at', { useTz: true }).notNullable().defaultTo(this.now())
     })
   }
 

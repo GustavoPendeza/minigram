@@ -13,7 +13,8 @@ export default class Categories extends BaseSchema {
         .onDelete('CASCADE')
         .notNullable()
       table.string('category', 50).notNullable()
-      table.timestamps()
+      table.timestamp('created_at', { useTz: true }).notNullable().defaultTo(this.now())
+      table.timestamp('updated_at', { useTz: true }).notNullable().defaultTo(this.now())
     })
   }
 
